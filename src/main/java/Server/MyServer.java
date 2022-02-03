@@ -10,6 +10,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class MyServer extends JFrame {
@@ -23,7 +25,7 @@ public class MyServer extends JFrame {
 
     public MyServer() {
         prepareGUI();
-        new Thread(() -> {
+        Thread clientThread = new Thread(() -> {                      // создаем новый поток
             try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
                 chatArea.append("Запуск сервера...\n");
                 authService = new AuthServiceImpl();
@@ -40,8 +42,9 @@ public class MyServer extends JFrame {
             } finally {
                 authService.stop();
             }
-        }).start();
-
+        });
+        ExecutorService exService = Executors.newFixedThreadPool(10); // ExecutorService открываем 10 потоков для отработки клиентов
+        exService.execute(clientThread); // передаем поток в ExecutorService
     }
 
     public synchronized boolean nickNameIsBusy(String nickName) {
