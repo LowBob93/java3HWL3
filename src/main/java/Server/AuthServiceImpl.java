@@ -1,10 +1,13 @@
 package Server;
 
 import java.sql.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 public class AuthServiceImpl implements AuthService {
 
+    private static final Logger LOGGER = LogManager.getLogger(AuthServiceImpl.class);
     private static Connection connection;
     private static Statement statement;
     private static PreparedStatement preparedStatement;
@@ -39,6 +42,7 @@ public class AuthServiceImpl implements AuthService {
             e.printStackTrace();
         } finally {
             System.out.println("Ожидаем авторизации");
+            LOGGER.info("Ожидаем авторизации");
         }
     }
 
@@ -59,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
+        LOGGER.info("Авторизация окончена");
     }
     @Override
     public String getNickNameByLoginAndPassword(String login, String password) {
@@ -69,11 +73,13 @@ public class AuthServiceImpl implements AuthService {
 
             ResultSet user = preparedStatement.executeQuery();
             if (user.next()) {
+                LOGGER.info("Пользователь  " + login +" успешно подключен");
                 return user.getString("nickname");
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        LOGGER.warn("Пользователь " + login + " ввел  неверный пароль");
         return null;
     }
 

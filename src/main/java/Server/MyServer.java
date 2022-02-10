@@ -1,6 +1,9 @@
 package Server;
 
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
@@ -19,6 +22,7 @@ public class MyServer extends JFrame {
 
     private AuthService authService;
     private List<ClientHandler> handlerList;
+    private static final Logger LOGGER = LogManager.getLogger(MyServer.class);
 
     private final int SERVER_PORT = 8080;
     private JTextArea chatArea;
@@ -28,13 +32,16 @@ public class MyServer extends JFrame {
         Thread clientThread = new Thread(() -> {                      // создаем новый поток
             try (ServerSocket serverSocket = new ServerSocket(SERVER_PORT)) {
                 chatArea.append("Запуск сервера...\n");
+                LOGGER.info("Запуск сервера");
                 authService = new AuthServiceImpl();
                 handlerList = new ArrayList<>();
                 authService.start();
                 while (true) {
                     chatArea.append("Ожидаем подключение клиента...\n");
+                    LOGGER.info("Ожидаем подключение клиента");
                     Socket socket = serverSocket.accept();
                     chatArea.append("Клиент подключен.\n");
+                    LOGGER.info("Клиент подключен");
                     new ClientHandler(this, socket);
                 }
             } catch (IOException e) {
@@ -81,12 +88,14 @@ public class MyServer extends JFrame {
 
     public synchronized void approved(ClientHandler handler) {
         chatArea.append(handler.getNickName() + " Успешно подключился к серверу\n");
+        LOGGER.info(handler.getNickName() + " Успешно подключился к серверу");
         handlerList.add(handler);
     }
 
     public synchronized void unapproved(ClientHandler handler) {
         String nickName = handler.getNickName() != null ? handler.getNickName() : "Пользователь не зарегестрирован";
         chatArea.append("Пользователь " + nickName + " отключен. \n");
+        LOGGER.info("Пользователь " + nickName + " отключен.");
         handlerList.remove(handler);
     }
 
